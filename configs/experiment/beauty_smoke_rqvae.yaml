@@ -1,0 +1,53 @@
+# @package _global_
+# Minimal RQ-VAE smoke test.  This validates the RQ-VAE path only; its reduced
+# codebook size and step count mean its output must never be reported as a TIGER
+# reproduction result.
+defaults:
+  - rqvae_train_flat
+  - _self_
+
+task_name: beauty_smoke_rqvae
+tags:
+  - beauty
+  - smoke-test
+  - grid-setting
+seed: 42
+
+trainer:
+  devices: 1
+  num_nodes: 1
+  strategy: auto
+  sync_batchnorm: false
+  precision: 32
+  deterministic: true
+  max_steps: 3
+  max_epochs: 1
+  log_every_n_steps: 1
+
+model:
+  # 16^3 < 12,101, so the fourth collision-disambiguation SID digit is also
+  # exercised during export.  This is intentional for the smoke test.
+  init_buffer_size: 64
+  quantization_layer:
+    initializer:
+      clustering_module:
+        init_buffer_size: ${model.init_buffer_size}
+
+data_loading:
+  datamodule:
+    train_dataloader_config:
+      limit_files: 1
+      batch_size_per_device: 32
+      num_workers: 0
+      persistent_workers: false
+      pin_memory: false
+    val_dataloader_config:
+      limit_files: 1
+      batch_size_per_device: 32
+      num_workers: 0
+      persistent_workers: false
+    test_dataloader_config:
+      limit_files: 1
+      batch_size_per_device: 32
+      num_workers: 0
+      persistent_workers: false

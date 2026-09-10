@@ -1,0 +1,36 @@
+# @package _global_
+# Minimal GPU smoke test for the Beauty item-text embedding stage.
+# This deliberately retains google/flan-t5-xl so its 2048-d output is compatible
+# with the GRID RQ-VAE configuration.  It is not a formal training configuration.
+defaults:
+  - sem_embeds_inference_flat
+  - _self_
+
+task_name: beauty_smoke_embedding
+tags:
+  - beauty
+  - smoke-test
+  - grid-setting
+seed: 42
+
+trainer:
+  devices: 1
+  num_nodes: 1
+  precision: 32
+  deterministic: true
+  log_every_n_steps: 1
+
+data_loading:
+  datamodule:
+    predict_dataloader_config:
+      # One compressed shard is sufficient to exercise TFRecord parsing, text
+      # tokenization, FLAN-T5 encoding, and merged embedding export.
+      limit_files: 1
+      batch_size_per_device: 4
+      num_workers: 0
+      persistent_workers: false
+      pin_memory: false
+
+callbacks:
+  pickle_writer:
+    flush_frequency: 8
