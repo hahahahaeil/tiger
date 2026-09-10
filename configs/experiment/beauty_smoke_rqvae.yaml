@@ -42,15 +42,18 @@ data_loading:
       limit_files: 1
       batch_size_per_device: 32
       num_workers: 0
+      timeout: 0
       persistent_workers: false
       pin_memory: false
     val_dataloader_config:
       limit_files: 1
       batch_size_per_device: 32
       num_workers: 0
+      timeout: 0
       persistent_workers: false
     test_dataloader_config:
       limit_files: 1
       batch_size_per_device: 32
       num_workers: 0
+      timeout: 0
       persistent_workers: false

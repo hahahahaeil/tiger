@@ -73,3 +73,18 @@ The minimal recovery path is to obtain the unchanged official
 `google/flan-t5-xl` snapshot on a host with stable Hugging Face access, transfer
 it to the server, and pass that local directory through `embedding_model`.
 This preserves the configured encoder and does not substitute a model.
+
+## Local-model retry result
+
+The model snapshot was subsequently downloaded, with both safetensors shards
+verified against their expected byte sizes. The local-model smoke then reached
+DataLoader construction on GPU 2 but failed before the first batch with
+`AssertionError` from PyTorch: a single-process DataLoader (`num_workers: 0`)
+requires `timeout == 0`. The base configuration sets `timeout: 60`; the smoke
+override initially changed worker count without changing this dependent value.
+
+Minimal configuration repair applied: set `timeout: 0` wherever the smoke
+configuration uses `num_workers: 0` (embedding, RQ-VAE train/validation/test,
+and RQ-VAE SID export). No model implementation, data, model checkpoint, or
+encoder setting was changed. The embedding smoke must be retried with this
+configuration before any RQ-VAE step.
