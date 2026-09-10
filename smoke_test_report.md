@@ -1,9 +1,9 @@
 # TIGER Beauty smoke-test report
 
-Status: ready to run. The server-side dataset audit has passed and no model
-code has been changed. The two dedicated smoke configurations constrain the
-embedding and RQ-VAE stages to one item shard, one GPU, and three RQ-VAE
-updates.
+Status: blocked at the embedding stage. The server-side dataset audit has
+passed and no model code has been changed. The FLAN-T5-XL tokenizer/model was
+not cached and the Hugging Face metadata request timed out. See
+`embedding_smoke_report.md`; RQ-VAE, SID, and TIGER smoke stages have not run.
 
 The smoke sequence is embedding -> RQ-VAE -> SID export/deduplication -> TIGER
 forward/training -> constrained beam generation -> Recall/NDCG. It must use a
