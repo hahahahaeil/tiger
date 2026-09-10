@@ -1,0 +1,2 @@
+# Server shell scripts must retain Unix line endings after ZIP extraction.
+*.sh text eol=lf
