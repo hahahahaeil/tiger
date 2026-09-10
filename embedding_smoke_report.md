@@ -59,3 +59,17 @@ Before retrying, record `du -sh "${HF_HOME:-$HOME/.cache/huggingface}"` and
 check whether `models--google--flan-t5-xl` exists. The successful retry must
 run `tools/audit_smoke_tensor.py embedding` only after the inference command
 returns exit code 0.
+
+## Retry 1 result
+
+Retry 1 used `HF_HUB_ETAG_TIMEOUT=60` and `HF_HUB_DOWNLOAD_TIMEOUT=600`, but
+failed after 74.62 seconds with `ConnectionResetError: [Errno 104] Connection
+reset by peer` during the TLS handshake to `huggingface.co`. Increasing the
+timeout did not change the outcome, so this is now classified as an upstream
+network-connectivity block rather than an application timeout. No model files
+were cached and no embedding output exists.
+
+The minimal recovery path is to obtain the unchanged official
+`google/flan-t5-xl` snapshot on a host with stable Hugging Face access, transfer
+it to the server, and pass that local directory through `embedding_model`.
+This preserves the configured encoder and does not substitute a model.
