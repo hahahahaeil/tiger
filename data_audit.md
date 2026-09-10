@@ -1,7 +1,7 @@
 # Beauty data audit
 
-Status: filesystem audit completed locally; record-level audit is pending the
-server `grid` environment because this dataset is GZIP TFRecord.
+Status: passed on the server `grid` environment. The record-level inspection
+used TensorFlow's GZIP TFRecord reader and examined every record.
 
 The actual local Beauty directory is
 `D:/data/amazon_data/amazon_data/beauty`, one level below the supplied root.
@@ -17,17 +17,30 @@ level is recorded here because the original supplied path omitted it.
 | testing | 175 | 496,831,085 |
 | total | 550 | 1,385,699,962 |
 
-The SHA-256 of the deterministic local `size + relative-path` manifest is
-`41F90D273E347D90946686B4A6B037965289D091B0B69856AF2B151A2C88F241`.
-This is a layout fingerprint, not a content hash. The server run must record
-its own manifest and compare file counts and total bytes.
+The server SHA-256 of the deterministic `size + relative-path` manifest is
+`5f8aacfe624a4d32300e67e350168a2ea087f298d84f2c340ac02e5023f7d849`.
+This is a layout fingerprint rather than a content hash. File counts and total
+bytes match the local filesystem audit; the earlier local manifest used a
+different path representation and should not be compared byte-for-byte.
 
-The four required directories exist locally: `items`, `training`,
-`evaluation`, and `testing`. The source uses `sequence_data` and `user_id`
-from TFRecord examples. In `NextKTokenMasking`, the final `K` tokens of the
-SID-token sequence become labels and are replaced before the model forward
-pass. Therefore raw final-item presence is expected; the runtime audit must
-verify that those label tokens are absent from `input_ids`.
+The four required directories exist locally and on the server: `items`,
+`training`, `evaluation`, and `testing`. `items` contains 12,101 records with
+unique, contiguous, zero-based IDs `0..12100`; no IDs are missing or
+duplicated. Each interaction split contains 22,363 users, with no duplicate
+user rows and no unknown item references.
+
+Every user follows the intended split protocol. For 21,344 users,
+`evaluation == testing[:-1]`; for the remaining 1,019 fixed-length windows,
+`evaluation[1:] == testing[:-1]`. All 22,363 users satisfy
+`training_tail == evaluation[:-1]`. Thus the last interaction is the test
+target and the penultimate interaction is the validation target without
+mistaking sliding-window truncation for a split error.
+
+The source uses `sequence_data` and `user_id` from TFRecord examples. In
+`NextKTokenMasking`, the final `K` tokens of the SID-token sequence become
+labels and are replaced before the model forward pass. Raw final-item presence
+is therefore expected; the smoke test will verify that label tokens are absent
+from runtime `input_ids`.
 
 Run on the server and save both stdout and JSON:
 

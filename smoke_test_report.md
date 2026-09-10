@@ -1,7 +1,9 @@
 # TIGER Beauty smoke-test report
 
-Status: not run. A smoke run is blocked until the repository update and the
-server-side dataset audit are available. No model code has been changed.
+Status: ready to run. The server-side dataset audit has passed and no model
+code has been changed. The two dedicated smoke configurations constrain the
+embedding and RQ-VAE stages to one item shard, one GPU, and three RQ-VAE
+updates.
 
 The smoke sequence is embedding -> RQ-VAE -> SID export/deduplication -> TIGER
 forward/training -> constrained beam generation -> Recall/NDCG. It must use a
@@ -27,3 +29,9 @@ inference datamodule/callbacks. It reuses `ResidualQuantization.predict_step`,
 `LocalPickleWriter`, and the existing post-processors (deduplicate then
 transpose). Model architecture is unchanged. The export result must still be
 validated for `N x K` before transpose and `K x N` after transpose.
+
+The embedding smoke deliberately uses the repository's configured
+`google/flan-t5-xl` encoder. Its embedding size must be 2,048; using a smaller
+FLAN variant would invalidate the subsequent GRID RQ-VAE shape check. This is
+still a GRID setting rather than a strict TIGER reproduction, because the
+TIGER paper uses Sentence-T5.
