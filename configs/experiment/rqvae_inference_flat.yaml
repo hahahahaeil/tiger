@@ -1,0 +1,83 @@
+# @package _global_
+# Minimal RQ-VAE SID-export counterpart to rqvae_train_flat.yaml.
+# It composes the training architecture so a checkpoint has matching modules,
+# then replaces only the datamodule and callbacks needed by src.inference.
+defaults:
+  - rqvae_train_flat
+  - _self_
+
+data_dir: ???
+embedding_path: ???
+embedding_dim: ???
+num_hierarchies: ???
+codebook_width: ???
+ckpt_path: ???
+seed: 42
+
+task_name: inference
+tags:
+  - amazon-rqvae-sid-export
+train: false
+test: false
+
+model:
+  optimizer: null
+  scheduler: null
+  evaluator: null
+
+callbacks:
+  model_checkpoint: null
+  early_stopping: null
+  restart_job: null
+  pickle_writer:
+    _target_: src.utils.inference_utils.LocalPickleWriter
+    output_dir: ${paths.output_dir}/pickle
+    flush_frequency: 100000
+    write_interval: batch
+    should_merge_files_on_main: true
+    prediction_key_name: item_id
+    prediction_name: cluster_ids
+    post_processing_functions:
+      - function:
+          _target_: src.utils.tensor_utils.deduplicate_rows_in_tensor
+          _partial_: true
+        main_only: true
+      - function:
+          _target_: src.utils.tensor_utils.transpose_tensor_from_file
+          _partial_: true
+        main_only: true
+
+trainer:
+  max_steps: 1
+  max_epochs: 1
+  devices: -1
+  precision: bf16-mixed
+  strategy: ddp_find_unused_parameters_true
+  sync_batchnorm: true
+
+data_loading:
+  datamodule:
+    _target_: src.data.loading.datamodules.sequence_datamodule.ItemDataModule
+    predict_dataloader_config:
+      _target_: src.data.loading.components.interfaces.ItemDataloaderConfig
+      dataset_class:
+        _target_: src.data.loading.components.dataloading.UnboundedSequenceIterable
+        _partial_: true
+      data_folder: ${paths.data_dir}/items
+      should_shuffle_rows: false
+      batch_size_per_device: 128
+      num_workers: 2
+      assign_files_by_size: true
+      timeout: 60
+      drop_last: false
+      pin_memory: false
+      persistent_workers: true
+      collate_fn:
+        _target_: src.data.loading.components.collate_functions.collate_fn_items
+        _partial_: true
+        item_id_field: ${data_loading.dataset_config.dataset.item_id_field}
+        feature_to_input_name:
+          id: item_ids
+          embedding: input_embedding
+      dataset_config: ${data_loading.dataset_config.dataset}
+      limit_files: null

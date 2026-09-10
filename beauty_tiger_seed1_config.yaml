@@ -1,0 +1,30 @@
+# Audited run manifest. The actual resolved Hydra config is saved automatically
+# to <run_dir>/.hydra/config.yaml and must be retained with the run logs.
+run_name: beauty_tiger_seed1
+classification: GRID setting; not a strict TIGER reproduction
+seed: 42
+dataset:
+  server_data_dir: /data2/hnlcm/dataset/amazon_data/beauty
+  local_reference_data_dir: D:/data/amazon_data/amazon_data/beauty
+  required_splits: [items, training, evaluation, testing]
+semantic_id:
+  method: RQ-VAE
+  embedding_encoder: google/flan-t5-xl
+  embedding_dim: 2048
+  rqvae_layers: 3
+  codebook_width: 256
+  expected_raw_sid_orientation: N_by_K
+  expected_tiger_sid_orientation: K_by_N
+  deduplication_digit: required_before_tiger
+tiger:
+  history_length_items: 20
+  sequence_length_sid_tokens: 80
+  # GRID default is 120 SID tokens; this manifest requests 20 items x 4 SID digits.
+  num_hierarchies_after_deduplication: 4
+  beam_size: 10
+  metrics: [recall@5, ndcg@5, recall@10, ndcg@10]
+commands:
+  embedding: python -m src.inference experiment=sem_embeds_inference_flat data_dir=/data2/hnlcm/dataset/amazon_data/beauty seed=42
+  rqvae_train: python -m src.train experiment=rqvae_train_flat data_dir=/data2/hnlcm/dataset/amazon_data/beauty embedding_path=<embedding_tensor.pt> embedding_dim=2048 num_hierarchies=3 codebook_width=256 seed=42
+  tiger_train: python -m src.train experiment=tiger_train_flat data_dir=/data2/hnlcm/dataset/amazon_data/beauty semantic_id_path=<deduplicated_KxN_sid_tensor.pt> num_hierarchies=4 sequence_length=80 seed=42
+  tiger_inference: python -m src.inference experiment=tiger_inference_flat data_dir=/data2/hnlcm/dataset/amazon_data/beauty semantic_id_path=<deduplicated_KxN_sid_tensor.pt> ckpt_path=<tiger_checkpoint.ckpt> num_hierarchies=4 sequence_length=80 seed=42

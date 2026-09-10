@@ -1,0 +1,21 @@
+{
+  "status": "not_run",
+  "classification": "GRID setting pending RQ-VAE export configuration",
+  "seed": 42,
+  "metrics": {
+    "recall@5": null,
+    "ndcg@5": null,
+    "recall@10": null,
+    "ndcg@10": null
+  },
+  "artifacts": {
+    "embedding": null,
+    "rqvae_checkpoint": null,
+    "semantic_id_tensor": null,
+    "tiger_checkpoint": null,
+    "resolved_hydra_config": null,
+    "training_log": null,
+    "inference_log": null
+  },
+  "blocking_issue": "RQ-VAE inference/export YAML is absent from this GRID commit."
+}
