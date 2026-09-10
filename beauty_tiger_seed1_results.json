@@ -2,6 +2,14 @@
   "status": "not_run",
   "classification": "GRID setting pending RQ-VAE export configuration",
   "seed": 42,
+  "data_audit": {
+    "status": "filesystem_and_id_audit_passed; per-user holdout audit_pending",
+    "item_count": 12101,
+    "item_id_domain": "zero_based_0_to_12100",
+    "users_per_split": 22363,
+    "unknown_item_references": 0,
+    "server_manifest_sha256_size_path": "5f8aacfe624a4d32300e67e350168a2ea087f298d84f2c340ac02e5023f7d849"
+  },
   "metrics": {
     "recall@5": null,
     "ndcg@5": null,

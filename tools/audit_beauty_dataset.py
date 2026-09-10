@@ -69,7 +69,7 @@ def audit_items(paths):
 
 def audit_split(name, paths, item_ids):
     lengths, all_ids, unknown, rows = Counter(), Counter(), 0, 0
-    users, duplicate_user_rows = set(), 0
+    users, duplicate_user_rows, user_sequences = set(), 0, {}
     last_items = Counter()
     for row in iter_examples(paths):
         rows += 1
@@ -84,6 +84,7 @@ def audit_split(name, paths, item_ids):
             if user in users:
                 duplicate_user_rows += 1
             users.add(user)
+            user_sequences[user] = seq
     return {
         "split": name, "records": rows, "unique_users": len(users),
         "duplicate_user_rows": duplicate_user_rows, "sequence_length_histogram": dict(sorted(lengths.items())),
@@ -91,6 +92,26 @@ def audit_split(name, paths, item_ids):
         "sequence_item_max": max(all_ids) if all_ids else None,
         "unknown_item_references": unknown, "unique_sequence_items": len(all_ids),
         "last_item_unique_count": len(last_items),
+    }, user_sequences
+
+
+def audit_split_relationships(training, evaluation, testing):
+    users = {name: set(rows) for name, rows in {
+        "training": training, "evaluation": evaluation, "testing": testing
+    }.items()}
+    common = set.intersection(*users.values())
+    test_prefix_matches = sum(evaluation[u] == testing[u][:-1] for u in common)
+    train_tail_matches = sum(
+        len(evaluation[u]) >= 2 and training[u][-len(evaluation[u][:-1]):] == evaluation[u][:-1]
+        for u in common
+    )
+    return {
+        "common_users": len(common),
+        "users_missing_from_any_split": sum(len(s - common) for s in users.values()),
+        "evaluation_equals_testing_without_final_item": test_prefix_matches,
+        "training_tail_equals_evaluation_without_final_item": train_tail_matches,
+        "all_users_follow_test_holdout_rule": test_prefix_matches == len(common),
+        "all_users_follow_validation_holdout_rule": train_tail_matches == len(common),
     }
 
 
@@ -105,11 +126,16 @@ def main():
         raise SystemExit(f"Missing required directories: {missing}")
     files = {name: sorted((args.data_dir / name).glob("*.tfrecord.gz")) for name in required}
     item_audit = audit_items(files["items"])
+    split_results = {}
+    split_sequences = {}
+    for name in ("training", "evaluation", "testing"):
+        split_results[name], split_sequences[name] = audit_split(name, files[name], item_audit["item_ids"])
     result = {
         "data_dir": str(args.data_dir.resolve()), "manifest": file_manifest(args.data_dir),
         "file_counts": {name: len(paths) for name, paths in files.items()},
         "items": {k: v for k, v in item_audit.items() if k != "item_ids"},
-        "splits": {name: audit_split(name, files[name], item_audit["item_ids"]) for name in ("training", "evaluation", "testing")},
+        "splits": split_results,
+        "split_relationships": audit_split_relationships(**split_sequences),
         "interpretation": "GRID masks the final num_hierarchies SID tokens in collate. Raw split records therefore contain targets by design; runtime audit must verify that masked labels are absent from model inputs.",
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -40,4 +40,6 @@ python tools/audit_beauty_dataset.py \
 Acceptance checks from that JSON: contiguous item-ID domain (explicitly
 zero- or one-based), no duplicate item records, zero unknown sequence item
 references, sequence-length distribution consistent with the requested 20
-history items plus held-out labels, and no unintended duplicate user rows.
+history items plus held-out labels, no unintended duplicate user rows, and
+`evaluation == testing[:-1]` plus `training_tail == evaluation[:-1]` for every
+user. The last two checks directly validate the validation/test holdout rule.
