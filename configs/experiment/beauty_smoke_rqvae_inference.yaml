@@ -1,0 +1,38 @@
+# @package _global_
+# Export Semantic IDs from the checkpoint produced by beauty_smoke_rqvae.
+# The post-processing order is raw N x 3 cluster IDs -> append collision digit
+# -> transpose to the K x N tensor required by the TIGER loader.
+defaults:
+  - rqvae_inference_flat
+  - _self_
+
+task_name: beauty_smoke_rqvae_sid_export
+tags:
+  - beauty
+  - smoke-test
+  - grid-setting
+seed: 42
+embedding_dim: 2048
+num_hierarchies: 3
+codebook_width: 16
+
+trainer:
+  devices: 1
+  num_nodes: 1
+  strategy: auto
+  sync_batchnorm: false
+  precision: 32
+  deterministic: true
+
+data_loading:
+  datamodule:
+    predict_dataloader_config:
+      limit_files: 1
+      batch_size_per_device: 32
+      num_workers: 0
+      persistent_workers: false
+      pin_memory: false
+
+callbacks:
+  pickle_writer:
+    flush_frequency: 64

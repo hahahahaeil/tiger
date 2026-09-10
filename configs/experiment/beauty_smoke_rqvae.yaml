@@ -12,6 +12,9 @@ tags:
   - smoke-test
   - grid-setting
 seed: 42
+embedding_dim: 2048
+num_hierarchies: 3
+codebook_width: 16
 
 trainer:
   devices: 1
