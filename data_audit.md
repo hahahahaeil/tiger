@@ -5,8 +5,9 @@ server `grid` environment because this dataset is GZIP TFRecord.
 
 The actual local Beauty directory is
 `D:/data/amazon_data/amazon_data/beauty`, one level below the supplied root.
-The intended server counterpart is
-`/data2/hnlcm/dataset/amazon_data/beauty`.
+The actual server counterpart after the observed unzip command is
+`/data2/hnlcm/dataset/amazon_data/amazon_data/beauty`. This extra directory
+level is recorded here because the original supplied path omitted it.
 
 | Split | Files | Bytes |
 | --- | ---: | ---: |
@@ -32,7 +33,7 @@ Run on the server and save both stdout and JSON:
 
 ```bash
 python tools/audit_beauty_dataset.py \
-  /data2/hnlcm/dataset/amazon_data/beauty \
+  /data2/hnlcm/dataset/amazon_data/amazon_data/beauty \
   --output logs/audit/beauty_data_audit.json | tee logs/audit/beauty_data_audit.txt
 ```
 

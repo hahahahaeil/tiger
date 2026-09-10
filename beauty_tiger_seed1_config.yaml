@@ -4,7 +4,7 @@ run_name: beauty_tiger_seed1
 classification: GRID setting; not a strict TIGER reproduction
 seed: 42
 dataset:
-  server_data_dir: /data2/hnlcm/dataset/amazon_data/beauty
+  server_data_dir: /data2/hnlcm/dataset/amazon_data/amazon_data/beauty
   local_reference_data_dir: D:/data/amazon_data/amazon_data/beauty
   required_splits: [items, training, evaluation, testing]
 semantic_id:
@@ -24,7 +24,7 @@ tiger:
   beam_size: 10
   metrics: [recall@5, ndcg@5, recall@10, ndcg@10]
 commands:
-  embedding: python -m src.inference experiment=sem_embeds_inference_flat data_dir=/data2/hnlcm/dataset/amazon_data/beauty seed=42
-  rqvae_train: python -m src.train experiment=rqvae_train_flat data_dir=/data2/hnlcm/dataset/amazon_data/beauty embedding_path=<embedding_tensor.pt> embedding_dim=2048 num_hierarchies=3 codebook_width=256 seed=42
-  tiger_train: python -m src.train experiment=tiger_train_flat data_dir=/data2/hnlcm/dataset/amazon_data/beauty semantic_id_path=<deduplicated_KxN_sid_tensor.pt> num_hierarchies=4 sequence_length=80 seed=42
-  tiger_inference: python -m src.inference experiment=tiger_inference_flat data_dir=/data2/hnlcm/dataset/amazon_data/beauty semantic_id_path=<deduplicated_KxN_sid_tensor.pt> ckpt_path=<tiger_checkpoint.ckpt> num_hierarchies=4 sequence_length=80 seed=42
+  embedding: python -m src.inference experiment=sem_embeds_inference_flat data_dir=/data2/hnlcm/dataset/amazon_data/amazon_data/beauty seed=42
+  rqvae_train: python -m src.train experiment=rqvae_train_flat data_dir=/data2/hnlcm/dataset/amazon_data/amazon_data/beauty embedding_path=<embedding_tensor.pt> embedding_dim=2048 num_hierarchies=3 codebook_width=256 seed=42
+  tiger_train: python -m src.train experiment=tiger_train_flat data_dir=/data2/hnlcm/dataset/amazon_data/amazon_data/beauty semantic_id_path=<deduplicated_KxN_sid_tensor.pt> num_hierarchies=4 sequence_length=80 seed=42
+  tiger_inference: python -m src.inference experiment=tiger_inference_flat data_dir=/data2/hnlcm/dataset/amazon_data/amazon_data/beauty semantic_id_path=<deduplicated_KxN_sid_tensor.pt> ckpt_path=<tiger_checkpoint.ckpt> num_hierarchies=4 sequence_length=80 seed=42
