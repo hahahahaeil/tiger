@@ -41,5 +41,8 @@ Acceptance checks from that JSON: contiguous item-ID domain (explicitly
 zero- or one-based), no duplicate item records, zero unknown sequence item
 references, sequence-length distribution consistent with the requested 20
 history items plus held-out labels, no unintended duplicate user rows, and
-`evaluation == testing[:-1]` plus `training_tail == evaluation[:-1]` for every
-user. The last two checks directly validate the validation/test holdout rule.
+`evaluation == testing[:-1]` for uncapped users, or
+`evaluation[1:] == testing[:-1]` for the fixed-length rolling window, plus
+`training_tail == evaluation[:-1]` for every user. These checks directly
+validate the validation/test holdout rule without mistaking window truncation
+for a split error.

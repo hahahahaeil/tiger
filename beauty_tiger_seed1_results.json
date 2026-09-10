@@ -3,7 +3,7 @@
   "classification": "GRID setting pending RQ-VAE export configuration",
   "seed": 42,
   "data_audit": {
-    "status": "filesystem_and_id_audit_passed; per-user holdout audit_pending",
+    "status": "filesystem_and_id_audit_passed; validation_holdout_passed; test_holdout_pending_sliding_window_recheck",
     "item_count": 12101,
     "item_id_domain": "zero_based_0_to_12100",
     "users_per_split": 22363,

@@ -101,6 +101,10 @@ def audit_split_relationships(training, evaluation, testing):
     }.items()}
     common = set.intersection(*users.values())
     test_prefix_matches = sum(evaluation[u] == testing[u][:-1] for u in common)
+    test_window_matches = sum(
+        len(evaluation[u]) == len(testing[u]) and evaluation[u][1:] == testing[u][:-1]
+        for u in common
+    )
     train_tail_matches = sum(
         len(evaluation[u]) >= 2 and training[u][-len(evaluation[u][:-1]):] == evaluation[u][:-1]
         for u in common
@@ -109,8 +113,9 @@ def audit_split_relationships(training, evaluation, testing):
         "common_users": len(common),
         "users_missing_from_any_split": sum(len(s - common) for s in users.values()),
         "evaluation_equals_testing_without_final_item": test_prefix_matches,
+        "evaluation_sliding_window_equals_testing_without_final_item": test_window_matches,
         "training_tail_equals_evaluation_without_final_item": train_tail_matches,
-        "all_users_follow_test_holdout_rule": test_prefix_matches == len(common),
+        "all_users_follow_test_holdout_rule": test_prefix_matches + test_window_matches == len(common),
         "all_users_follow_validation_holdout_rule": train_tail_matches == len(common),
     }
 
