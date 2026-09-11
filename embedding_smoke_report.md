@@ -103,3 +103,18 @@ run only when `torch.distributed.is_available()` and
 operations still run only on rank zero, and multi-process synchronization is
 unchanged when a process group exists. The embedding smoke must use a new output
 directory on the next retry so failed-run pickle fragments are not reused.
+
+## Passed embedding smoke
+
+The second local-model retry completed successfully on 2026-09-11. It used one
+GPU, one Beauty `items` shard, batch size 4, and processed 1,024 items in 128
+prediction batches. The inference loop reported approximately 12 seconds; this
+does not include model initialization time. The output was written to
+`logs/audit/beauty_smoke_embedding_local_model_retry2/pickle/merged_predictions_tensor.pt`.
+
+`tools/audit_smoke_tensor.py embedding` reported shape `[1024, 2048]`,
+`torch.float32`, `finite: true`, zero NaN/Inf values, and `pass: true`.
+Observed value range was `[-0.3256579041481018, 0.23799371719360352]` with
+mean `0.00037762580905109644`. Post-run GPU 2 usage was 14 MiB of 81,920 MiB.
+This validates the embedding stage only; it is a one-shard smoke output, not a
+full Beauty embedding export.
