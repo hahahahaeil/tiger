@@ -88,3 +88,18 @@ configuration uses `num_workers: 0` (embedding, RQ-VAE train/validation/test,
 and RQ-VAE SID export). No model implementation, data, model checkpoint, or
 encoder setting was changed. The embedding smoke must be retried with this
 configuration before any RQ-VAE step.
+
+## Prediction-finalization retry result
+
+With the timeout override, prediction reached the end-of-predict callback but
+failed before writing the merged embedding tensor. `LocalPickleWriter` used
+`trainer.global_rank != None` as a proxy for a distributed run; Lightning
+provides rank zero in single-process mode, so this condition incorrectly called
+`torch.distributed.barrier()` without an initialized process group.
+
+Minimal code repair applied in `LocalPickleWriter.on_predict_end`: barriers now
+run only when `torch.distributed.is_available()` and
+`torch.distributed.is_initialized()` are both true. The merge and post-process
+operations still run only on rank zero, and multi-process synchronization is
+unchanged when a process group exists. The embedding smoke must use a new output
+directory on the next retry so failed-run pickle fragments are not reused.
